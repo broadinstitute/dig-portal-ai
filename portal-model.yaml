@@ -1,0 +1,157 @@
+id: https://w3id.org/a2f/portal-model
+name: a2f-portal
+prefixes:                                 
+  linkml: https://w3id.org/linkml/
+  a2f: https://w3id.org/a2f/
+  NCBIGene: http://identifiers.org/ncbigene/
+  dcid: https://datacommons.org/browser/
+  SO: http://purl.bioontology.org/ontology/SO/
+  SIO: http://semanticscience.org/resource/SIO_
+  HGNC: https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/
+  HGNC.SYMBOL: https://genenames.org/data/gene-symbol-report/#!/symbol/
+  ENSEMBL: http://identifiers.org/ensembl/
+  MGI: http://identifiers.org/mgi/
+  ZFIN: http://identifiers.org/zfin/
+  WIKIDATA: http://www.wikidata.org/entity/
+  NCIT: https://www.ebi.ac.uk/ols4/ontologies/ncit/terms?short_form=NCIT_
+  EFO: http://www.ebi.ac.uk/efo/EFO_
+  GCST: https://www.ebi.ac.uk/gwas/studies/GCST
+  PORTAL.DATASET: https://a2f.hugeamp.org/dinspector.html?dataset=
+
+imports:
+  - linkml:types
+default_range: string
+  
+classes:
+  gene:
+    description: >-
+      A region (or regions) that includes all of the sequence elements
+      necessary to encode a functional transcript. A gene locus may include
+      regulatory regions, transcribed regions and/or other
+      functional sequence regions.
+    slots:
+      - symbol
+      - xref
+    exact_mappings:
+      - SO:0000704
+      - SIO:010035
+      - WIKIDATA:Q7187
+      - dcid:Gene
+    id_prefixes:
+      - NCBIGene
+      - ENSEMBL
+      - HGNC.SYMBOL
+    broad_mappings:
+      - NCIT:C45822
+
+  trait:
+    description: >-
+      A trait is a property of an organism that can be measured or observed.
+    slots:
+      - name
+      - description
+      - xref
+    id_prefixes:
+      - EFO
+
+  association:
+    description: >-
+      An association between a gene and a trait.
+    slots:
+      - gene
+      - trait
+  
+  direct support association:
+    description: >-
+      A direct support association between a gene and a trait.
+    slots:
+      - gene
+      - trait
+      - score
+    is_a: association
+
+  indirect support association:
+    description: >-
+      An indirect support association between a gene and a trait.
+    slots:
+      - gene
+      - trait
+      - score
+  
+  combined support association:
+    description: >-
+      A combined support association between a gene and a trait.
+    slots:
+      - gene
+      - trait
+      - score
+
+  gwas:
+    description: >-
+      A Genome-Wide Association Study (GWAS) that has been published.
+    slots:
+      - name
+      - xref
+    id_prefixes:
+      - GCST
+      - PORTAL.DATASET
+
+  gene set:
+    description: >-
+      A set of genes that are associated. Used in PIGEAN. 
+    slots:
+      - name
+      - xref
+    id_prefixes:
+      - PORTAL.GENESET
+
+  gene set joint effect association:
+    description: >-
+      The joint effect size of a gene set for a trait.
+    slots:
+      - gene_set
+      - trait
+      - score
+    is_a: association
+
+  gene set marginal effect association:
+    description: >-
+      The marginal effect size of a gene set for a trait.
+    slots:
+      - gene_set
+      - trait
+      - score
+    is_a: association
+
+slots:
+  id:
+    identifier: true
+
+  score:
+    abstract: true
+    description: >-
+      The strength of an association.
+
+  direct support score:
+    description: >-
+      The direct genetic support a gene has for a trait expressed in log odds.
+    is_a: score
+
+  indirect support score:
+    description: >-
+      The indirect genetic support a gene has for a trait expressed in log odds.
+
+  combined support score:
+    description: >-
+      The combined genetic support a gene has for a trait expressed in log odds.
+    is_a: score
+
+  marginal effect score:
+    description: >-
+      The marginal effect a gene set has for a trait.
+    is_a: score
+
+  joint effect score:
+    description: >-
+      The joint effect a gene set has for a trait.
+    is_a: score
