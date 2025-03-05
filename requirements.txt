@@ -1,4 +1,7 @@
 linkml
 dagster
 dagster-webserver
-requests
+neo4j
+pandas
+rdflib
+numpy

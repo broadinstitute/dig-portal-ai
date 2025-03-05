@@ -4,18 +4,18 @@ prefixes:
   linkml: https://w3id.org/linkml/
   a2f: https://w3id.org/a2f/
   NCBIGene: http://identifiers.org/ncbigene/
-  dcid: https://datacommons.org/browser/
-  SO: http://purl.bioontology.org/ontology/SO/
-  SIO: http://semanticscience.org/resource/SIO_
-  HGNC: https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/
-  HGNC.SYMBOL: https://genenames.org/data/gene-symbol-report/#!/symbol/
+  DATACOMMONS: https://datacommons.org/browser/
+  SO: http://purl.obolibrary.org/obo/SO_
+  SIO: http://identifiers.org/sio/
+  HGNC: http://identifiers.org/hgnc/
+  HGNC.SYMBOL: http://identifiers.org/hgnc.symbol/
   ENSEMBL: http://identifiers.org/ensembl/
-  MGI: http://identifiers.org/mgi/
+  MGI: http://identifiers.org/MGI/
   ZFIN: http://identifiers.org/zfin/
-  WIKIDATA: http://www.wikidata.org/entity/
-  NCIT: https://www.ebi.ac.uk/ols4/ontologies/ncit/terms?short_form=NCIT_
-  EFO: http://www.ebi.ac.uk/efo/EFO_
-  GCST: https://www.ebi.ac.uk/gwas/studies/GCST
+  WIKIDATA: http://identifiers.org/wikidata/
+  NCIT: http://purl.obolibrary.org/obo/NCIT_
+  EFO: http://identifiers.org/efo/
+  GCST: http://identifiers.org/gcst/
   PORTAL.DATASET: https://a2f.hugeamp.org/dinspector.html?dataset=
 
 imports:
@@ -23,15 +23,15 @@ imports:
 default_range: string
   
 classes:
-  gene:
+  Gene:
     description: >-
       A region (or regions) that includes all of the sequence elements
       necessary to encode a functional transcript. A gene locus may include
       regulatory regions, transcribed regions and/or other
       functional sequence regions.
     slots:
+      - id
       - symbol
-      - xref
     exact_mappings:
       - SO:0000704
       - SIO:010035
@@ -43,115 +43,192 @@ classes:
       - HGNC.SYMBOL
     broad_mappings:
       - NCIT:C45822
+    attributes:
+      has_xrefs:
+        description: >-
+          A cross-reference to an external database.
+        range: string
+        multivalued: true
 
-  trait:
+  Phenotype:
     description: >-
-      A trait is a property of an organism that can be measured or observed.
+      A phenotype is a property of an organism that can be measured or observed.
     slots:
+      - id
       - name
       - description
-      - xref
+      - display_name
     id_prefixes:
       - EFO
+    attributes:
+      has_xrefs:
+        description: >-
+          A cross-reference to an external database.
+        range: string
+        multivalued: true
 
-  association:
+  Association:
     description: >-
       An association between a gene and a trait.
     slots:
+      - id
       - gene
-      - trait
+      - phenotype
   
-  direct support association:
+  DirectSupportAssociation:
     description: >-
       A direct support association between a gene and a trait.
     slots:
+      - id
       - gene
-      - trait
+      - phenotype
       - score
-    is_a: association
+    is_a: Association
 
-  indirect support association:
+  IndirectSupportAssociation:
     description: >-
       An indirect support association between a gene and a trait.
     slots:
+      - id
       - gene
-      - trait
+      - phenotype
       - score
   
-  combined support association:
+  CombinedSupportAssociation:
     description: >-
       A combined support association between a gene and a trait.
     slots:
+      - id
       - gene
-      - trait
+      - phenotype
       - score
 
-  gwas:
+  Gwas:
     description: >-
       A Genome-Wide Association Study (GWAS) that has been published.
     slots:
+      - id
+      - description
       - name
-      - xref
+      - phenotype
+    attributes:
+      has_xrefs:
+        description: >-
+          A cross-reference to an external database.
+        range: string
+        multivalued: true
     id_prefixes:
       - GCST
       - PORTAL.DATASET
 
-  gene set:
+  GeneSet:
     description: >-
       A set of genes that are associated. Used in PIGEAN. 
     slots:
+      - id
       - name
-      - xref
+      - description
+    attributes:
+      has_xrefs:
+        description: >-
+          A cross-reference to an external database.
+        range: string
+        multivalued: true
+
     id_prefixes:
       - PORTAL.GENESET
 
-  gene set joint effect association:
+  GeneSetJointEffectAssociation:
     description: >-
       The joint effect size of a gene set for a trait.
     slots:
+      - id
       - gene_set
-      - trait
+      - phenotype
       - score
-    is_a: association
+    is_a: Association
 
-  gene set marginal effect association:
+  GeneSetMarginalEffectAssociation:
     description: >-
       The marginal effect size of a gene set for a trait.
     slots:
+      - id
       - gene_set
-      - trait
+      - phenotype
       - score
-    is_a: association
+    is_a: Association
 
-slots:
-  id:
-    identifier: true
-
-  score:
+  Score:
     abstract: true
     description: >-
       The strength of an association.
 
-  direct support score:
+  DirectSupportScore:
     description: >-
       The direct genetic support a gene has for a trait expressed in log odds.
-    is_a: score
+    is_a: Score
 
-  indirect support score:
+  IndirectSupportScore:
     description: >-
       The indirect genetic support a gene has for a trait expressed in log odds.
 
-  combined support score:
+  CombinedSupportScore:
     description: >-
       The combined genetic support a gene has for a trait expressed in log odds.
-    is_a: score
+    is_a: Score
 
-  marginal effect score:
+  MarginalEffectScore:
     description: >-
       The marginal effect a gene set has for a trait.
-    is_a: score
+    is_a: Score
 
-  joint effect score:
+  JointEffectScore:
     description: >-
       The joint effect a gene set has for a trait.
-    is_a: score
+    is_a: Score
+
+slots:
+  id:
+    identifier: true
+    description: >-
+      The unique identifier for an entity.
+
+  symbol:
+    description: >-
+      The HGNC symbol for a gene.
+    range: string
+
+  name:
+    description: >-
+      The internal name of an entity in the portal.
+    range: string
+
+  display_name:
+    description: >-
+      The display name of an entity in the portal.
+    range: string
+
+  description:
+    description: >-
+      The description of an entity in the portal.
+    range: string
+
+  gene:
+    description: >-
+      The gene object of an association.
+    range: Gene
+
+  phenotype:
+    description: >-
+      The phenotype object of an association.
+    range: Phenotype
+
+  score:
+    description: >-
+      The score object of an association.
+    range: Score
+
+  gene_set:
+    description: >-
+      The gene set object of an association.
+    range: GeneSet
