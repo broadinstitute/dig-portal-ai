@@ -9,7 +9,6 @@ packages = ["kg_ingress"]
 name = "kg_ingress"
 version = "0.1.0"
 dependencies = [
-    "dagster",
     "pandas",
     "rdflib",
     "requests",

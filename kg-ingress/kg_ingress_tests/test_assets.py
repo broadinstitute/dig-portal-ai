@@ -1,5 +1,4 @@
 import pytest
-from dagster import build_op_context, materialize
 from unittest.mock import Mock
 from kg_ingress.assets import fetch_phenotype_data, transform_phenotype_data
 from kg_ingress.models.portal_model import Phenotype, Gwas

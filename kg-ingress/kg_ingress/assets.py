@@ -1,4 +1,3 @@
-from dagster import asset
 import requests
 from neo4j import GraphDatabase
 from .models.portal_model import *
@@ -10,7 +9,6 @@ from .utils.phenotype_utils import (
     lookup_trait_with_db_refs
 )
 
-@asset
 def fetch_phenotype_data():
     """Fetch phenotype data from the bioindex API"""
     url = "https://bioindex-dev.hugeamp.org/api/bio/query/pigean-phenotypes?q=1"
@@ -34,7 +32,6 @@ def fetch_phenotype_data():
         
     return all_data
 
-@asset
 def transform_phenotype_data(fetch_phenotype_data):
     """Transform raw phenotype data into model objects"""
     transformed = []
@@ -52,4 +49,24 @@ def transform_phenotype_data(fetch_phenotype_data):
             phenotype = create_portal_phenotype(item["phenotype"], item["phenotype_name"])
             if phenotype:
                 transformed.append(phenotype)
-    return transformed 
+    return transformed
+
+def insert_data(transformed, neo4j_uri, neo4j_user, neo4j_password):
+    """Insert transformed phenotype data into Neo4j"""
+    with GraphDatabase.driver(neo4j_uri, auth=(neo4j_user, neo4j_password)) as driver:
+        with driver.session() as session:
+            for phenotype in transformed:
+                session.run(
+                    """
+                    MERGE (p:Phenotype {id: $id})
+                    SET p.name = $name,
+                        p.description = $description,
+                        p.source = $source
+                    """
+                    ,
+                    id=phenotype.id,
+                    name=phenotype.name,
+                    description=phenotype.description,
+                    source=phenotype.source
+                )
+ 

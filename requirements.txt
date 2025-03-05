@@ -1,7 +1,6 @@
 linkml
-dagster
-dagster-webserver
 neo4j
 pandas
 rdflib
 numpy
+requests
