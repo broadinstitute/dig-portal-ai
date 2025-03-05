@@ -10,12 +10,16 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@langchain/core": "^0.3.42",
+    "@langchain/openai": "^0.4.4",
     "@workspace/ui": "workspace:*",
+    "langchain": "^0.3.19",
     "lucide-react": "0.456.0",
-    "next-themes": "^0.4.3",
     "next": "^15.1.0",
+    "next-themes": "^0.4.3",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@types/node": "^20",
