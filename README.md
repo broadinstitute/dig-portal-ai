@@ -27,7 +27,7 @@ pip install linkml
 ```
 
 ```bash
-gen-python portal-model.yaml > kg-ingress/kg_ingress/model/portal_model.py
+gen-python portal-model.yaml > kg-ingress/kg_ingress/models/portal_model.py
 ```
 
 ### Building the Knowledge Graph
