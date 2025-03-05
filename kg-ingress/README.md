@@ -65,6 +65,8 @@ kg-ingress/
 │   ├── assets.py         # Core assets and functions
 │   └── utils/
 │       └── phenotype_utils.py  # Phenotype-specific utilities
+|   └── models/
+|       └── portal_model.py  # Current Portal Model file generated from portal-model.yaml LinkML model
 ├── kg_ingress_tests/
 │   ├── test_assets.py
 │   └── test_phenotype_utils.py

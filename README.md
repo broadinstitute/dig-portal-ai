@@ -27,7 +27,7 @@ pip install linkml
 ```
 
 ```bash
-gen-python portal-model.yaml > kg-ingress/kg_ingress/model/portal_model.py
+gen-python portal-model.yaml > kg-ingress/kg_ingress/models/portal_model.py
 ```
 
 ### Building the Knowledge Graph
@@ -80,7 +80,3 @@ This is a Turborepo project. For local development:
 3. Commit your changes
 4. Push to the branch
 5. Create a Pull Request
-
-## License
-
-[Add your license information here]
