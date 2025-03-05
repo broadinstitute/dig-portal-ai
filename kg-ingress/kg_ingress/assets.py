@@ -8,6 +8,7 @@ from .utils.phenotype_utils import (
     preprocess_gcat_info,
     lookup_trait_with_db_refs
 )
+import tqdm
 
 def fetch_phenotype_data():
     """Fetch phenotype data from the bioindex API"""
@@ -32,41 +33,61 @@ def fetch_phenotype_data():
         
     return all_data
 
-def transform_phenotype_data(fetch_phenotype_data):
+def transform_phenotype_data(
+        fetch_phenotype_data, 
+        portal_phenotype_info, 
+        gcat_phenotype_info, 
+        orphanet_owl,
+        verbose=False):
     """Transform raw phenotype data into model objects"""
     transformed = []
-    for item in fetch_phenotype_data:
+    for item in tqdm.tqdm(fetch_phenotype_data, desc="Transforming phenotype data", disable=not verbose):
         if "Orphanet" in item["phenotype"]:
-            phenotype = create_orphanet_phenotype(item["phenotype"], item["phenotype_name"])
+            phenotype = create_orphanet_phenotype(orphanet_owl, item["phenotype"], item["phenotype_name"])
             if phenotype:
                 transformed.append(phenotype)
         elif "gcat_trait" in item["phenotype"]:
-            phenotype, studies = create_gcat_phenotype(item["phenotype"], item["phenotype_name"])
+            phenotype, studies = create_gcat_phenotype(gcat_phenotype_info, item["phenotype"], item["phenotype_name"])
             if phenotype:
                 transformed.append(phenotype)
                 transformed.extend(studies)
         else:
-            phenotype = create_portal_phenotype(item["phenotype"], item["phenotype_name"])
+            phenotype = create_portal_phenotype(portal_phenotype_info, item["phenotype"], item["phenotype_name"])
             if phenotype:
                 transformed.append(phenotype)
     return transformed
 
-def insert_data(transformed, neo4j_uri, neo4j_user, neo4j_password):
+def insert_data(transformed, driver=None, neo4j_uri=None, neo4j_user=None, neo4j_password=None):
     """Insert transformed phenotype data into Neo4j"""
-    with GraphDatabase.driver(neo4j_uri, auth=(neo4j_user, neo4j_password)) as driver:
-        with driver.session() as session:
-            for phenotype in transformed:
-                session.run(
-                    """
-                    MERGE (p:Phenotype {id: $id})
-                    SET p.name = $name,
-                        p.description = $description,
-                        p.source = $source
-                    """
-                    ,
-                    id=phenotype.id,
-                    name=phenotype.name,
-                    description=phenotype.description,
-                    source=phenotype.source
-                )
- 
+    if driver is None:
+        driver = GraphDatabase.driver(neo4j_uri, auth=(neo4j_user, neo4j_password))
+    with driver.session() as session:
+            for item in transformed:
+                if isinstance(item, Phenotype):
+                    session.run(
+                        """
+                        MERGE (p:Phenotype {id: $id})
+                        SET p.name = $name,
+                            p.description = $description,
+                            p.display_name = $display_name
+                        """
+                        ,
+                        id=item.id,
+                        name=item.name,
+                        description=item.description,
+                        display_name=item.display_name
+                    )
+                elif isinstance(item, Gwas):
+                    session.run(
+                        """
+                        MERGE (g:Gwas {id: $id})
+                        SET g.name = $name,
+                            g.description = $description
+                        """
+                        ,
+                        id=item.id,
+                        name=item.name,
+                        description=item.description
+                    )
+                else:
+                    raise ValueError(f"Unknown item type: {type(item)}")

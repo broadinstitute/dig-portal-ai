@@ -1,5 +1,5 @@
 # Auto generated from portal-model.yaml by pythongen.py version: 0.0.1
-# Generation date: 2025-02-28T19:00:38
+# Generation date: 2025-03-05T13:41:42
 # Schema: a2f-portal
 #
 # id: https://w3id.org/a2f/portal-model
