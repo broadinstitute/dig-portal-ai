@@ -136,8 +136,10 @@ __pycache__/
 *.pyd
 *.pyw
 *.pyz
+*.egg-info/
 
 # Turbo
 .turbo/
 
 *venv/
+*.DS_Store
