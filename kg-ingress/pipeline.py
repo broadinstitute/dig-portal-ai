@@ -57,20 +57,20 @@ def lookup_trait_with_db_refs(orpha_id):
     :return: Dictionary with trait details including database references
     """
 
+    trait = f"http://www.orpha.net/ORDO/Orphanet_{orpha_id}"
+
     query = f"""
     PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
     PREFIX efo: <http://www.ebi.ac.uk/efo/>
     PREFIX owl: <http://www.w3.org/2002/07/owl#>
     PREFIX oboInOwl: <http://www.geneontology.org/formats/oboInOwl#>
 
-    SELECT ?trait ?label ?description ?db_xref
+    SELECT ?label ?description ?db_xref
     WHERE {{
-        ?trait a owl:Class .
-        ?trait rdfs:label ?label .
-        OPTIONAL {{ ?trait efo:definition ?description . }}
-        OPTIONAL {{ ?trait oboInOwl:hasDbXref ?db_xref . }}
-        
-        FILTER(STRSTARTS(STR(?trait), "http://www.orpha.net/ORDO/Orphanet_{orpha_id}"))
+        <{trait}> a owl:Class .
+        <{trait}> rdfs:label ?label .
+        OPTIONAL {{ <{trait}> efo:definition ?description . }}
+        OPTIONAL {{ <{trait}> oboInOwl:hasDbXref ?db_xref . }}
     }}
     """
 
@@ -86,7 +86,7 @@ def lookup_trait_with_db_refs(orpha_id):
 
     for row in results:
         if trait_info["Trait URI"] is None:
-            trait_info["Trait URI"] = str(row.trait)
+            trait_info["Trait URI"] = trait
             trait_info["Label"] = str(row.label)
             trait_info["Description"] = str(row.description) if row.description else "No description available"
         
