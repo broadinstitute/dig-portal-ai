@@ -143,3 +143,6 @@ __pycache__/
 
 *venv/
 *.DS_Store
+
+# IntelliJ IDEA
+.idea/
