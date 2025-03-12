@@ -60,4 +60,9 @@ if __name__ == "__main__":
     transformed = transform_phenotype_data(data, portal_phenotype_info, gcat_phenotype_info, orphanet_owl, verbose=True)
     logger.info("Inserting data into Neo4j")
     insert_data(transformed, driver=driver)
+    #TODO: Go through all phenotypes in transmformed and extract Phenotype.name and call
+    # https://bioindex-dev.hugeamp.org/api/bio/query/pigean-gene-phenotype? 
+    # then pass in the query (q={trait_name},2,large)
+    # Then add all genes and association objects via the portal_model.py
+    # Populate KG
     logger.info("Done")
