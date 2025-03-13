@@ -17,12 +17,47 @@ prefixes:
   EFO: http://identifiers.org/efo/
   GCST: http://identifiers.org/gcst/
   PORTAL.DATASET: https://a2f.hugeamp.org/dinspector.html?dataset=
+  PORTAL.GENESET: https://a2f.hugeamp.org/dinspector.html?geneset=
+  rdf: http://www.w3.org/1999/02/22-rdf-syntax-ns#
+  dcid: https://schema.datacommons.org/
+  PORTALLINK: https://a2f.hugeamp.org/linkml/
 
 imports:
   - linkml:types
 default_range: string
   
 classes:
+  Node:
+    abstract: true
+    description: >-
+      A node in the portal KG.
+    slots:
+      - id
+  
+  Edge:
+    abstract: true
+    description: >-
+      An edge in the portal KG.
+    class_uri: rdf:Statement
+    slots:
+      - id
+    slot_usage:
+      subject:
+        description: >-
+          The subject of the edge.
+        slot_uri: rdf:subject
+        range: Node
+      object:
+        description: >-
+          The object of the edge.
+        slot_uri: rdf:object
+        range: Node
+      predicate:
+        description: >-
+          The predicate of the edge.
+        slot_uri: rdf:predicate
+        range: uriorcurie
+
   Gene:
     description: >-
       A region (or regions) that includes all of the sequence elements
@@ -49,6 +84,7 @@ classes:
           A cross-reference to an external database.
         range: string
         multivalued: true
+    is_a: Node
 
   Phenotype:
     description: >-
@@ -66,42 +102,44 @@ classes:
           A cross-reference to an external database.
         range: string
         multivalued: true
+    is_a: Node
 
   Association:
     description: >-
       An association between a gene and a trait.
-    slots:
-      - id
-      - gene
-      - phenotype
-  
-  DirectSupportAssociation:
-    description: >-
-      A direct support association between a gene and a trait.
-    slots:
-      - id
-      - gene
-      - phenotype
-      - score
-    is_a: Association
+    slot_usage:
+      subject:
+        description: >-
+          The gene of the association.
+        range: Gene
+      object:
+        description: >-
+          The phenotype of the association.
+        range: Phenotype
+    is_a: Edge
 
-  IndirectSupportAssociation:
+  SupportAssociation:
     description: >-
-      An indirect support association between a gene and a trait.
-    slots:
-      - id
-      - gene
-      - phenotype
-      - score
-  
-  CombinedSupportAssociation:
-    description: >-
-      A combined support association between a gene and a trait.
-    slots:
-      - id
-      - gene
-      - phenotype
-      - score
+      An association between a gene and a trait in which a phenotype or trait is supported by the gene.
+    slot_usage:
+      predicate:
+        description: >-
+          The predicate of the association.
+        subproperty_of: supports
+    attributes:
+      direct_support:
+        description: >-
+          The direct support score for the association.
+        range: DirectSupportScore
+      indirect_support:
+        description: >-
+          The indirect support score for the association.
+        range: IndirectSupportScore
+      combined_support:
+        description: >-
+          The combined support score for the association.
+        range: CombinedSupportScore
+    is_a: Association
 
   Gwas:
     description: >-
@@ -167,15 +205,21 @@ classes:
     description: >-
       The direct genetic support a gene has for a trait expressed in log odds.
     is_a: Score
+    slots:
+      - log_odds
 
   IndirectSupportScore:
     description: >-
       The indirect genetic support a gene has for a trait expressed in log odds.
+    slots:
+      - log_odds
 
   CombinedSupportScore:
     description: >-
       The combined genetic support a gene has for a trait expressed in log odds.
     is_a: Score
+    slots:
+      - log_odds
 
   MarginalEffectScore:
     description: >-
@@ -187,11 +231,27 @@ classes:
       The joint effect a gene set has for a trait.
     is_a: Score
 
+
 slots:
   id:
     identifier: true
     description: >-
       The unique identifier for an entity.
+
+  subject:
+    description: >-
+      The subject of an edge.
+    range: Node
+
+  object:
+    description: >-
+      The object of an edge.
+    range: Node
+
+  predicate:
+    description: >-
+      The predicate of an edge.
+    range: uriorcurie
 
   symbol:
     description: >-
@@ -232,3 +292,15 @@ slots:
     description: >-
       The gene set object of an association.
     range: GeneSet
+
+  log_odds:
+    description: >-
+      The log odds of an probabilistic association.
+    range: float
+
+  # Predicates
+  supports:
+    description: >-
+      The predicate saying a gene supports (e.g. has a direct effect on) a phenotype.
+    domain: Gene
+    range: Phenotype

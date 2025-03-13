@@ -1,5 +1,5 @@
 # Auto generated from portal-model.yaml by pythongen.py version: 0.0.1
-# Generation date: 2025-03-05T13:41:42
+# Generation date: 2025-03-12T20:42:53
 # Schema: a2f-portal
 #
 # id: https://w3id.org/a2f/portal-model
@@ -57,7 +57,8 @@ from rdflib import (
     URIRef
 )
 
-from linkml_runtime.linkml_model.types import String
+from linkml_runtime.linkml_model.types import Float, String, Uriorcurie
+from linkml_runtime.utils.metamodelcore import URIorCURIE
 
 metamodel_version = "1.7.0"
 version = None
@@ -76,41 +77,43 @@ MGI = CurieNamespace('MGI', 'http://identifiers.org/MGI/')
 NCBIGENE = CurieNamespace('NCBIGene', 'http://identifiers.org/ncbigene/')
 NCIT = CurieNamespace('NCIT', 'http://purl.obolibrary.org/obo/NCIT_')
 PORTAL_DATASET = CurieNamespace('PORTAL_DATASET', 'https://a2f.hugeamp.org/dinspector.html?dataset=')
-PORTAL_GENESET = CurieNamespace('PORTAL_GENESET', 'http://example.org/UNKNOWN/PORTAL.GENESET/')
+PORTAL_GENESET = CurieNamespace('PORTAL_GENESET', 'https://a2f.hugeamp.org/dinspector.html?geneset=')
+PORTALLINK = CurieNamespace('PORTALLINK', 'https://a2f.hugeamp.org/linkml/')
 SIO = CurieNamespace('SIO', 'http://identifiers.org/sio/')
 SO = CurieNamespace('SO', 'http://purl.obolibrary.org/obo/SO_')
 WIKIDATA = CurieNamespace('WIKIDATA', 'http://identifiers.org/wikidata/')
 ZFIN = CurieNamespace('ZFIN', 'http://identifiers.org/zfin/')
 A2F = CurieNamespace('a2f', 'https://w3id.org/a2f/')
-DCID = CurieNamespace('dcid', 'http://example.org/UNKNOWN/dcid/')
+DCID = CurieNamespace('dcid', 'https://schema.datacommons.org/')
 LINKML = CurieNamespace('linkml', 'https://w3id.org/linkml/')
+RDF = CurieNamespace('rdf', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#')
 DEFAULT_ = CurieNamespace('', 'https://w3id.org/a2f/portal-model/')
 
 
 # Types
 
 # Class references
-class GeneId(extended_str):
+class NodeId(extended_str):
     pass
 
 
-class PhenotypeId(extended_str):
+class EdgeId(extended_str):
     pass
 
 
-class AssociationId(extended_str):
+class GeneId(NodeId):
     pass
 
 
-class DirectSupportAssociationId(AssociationId):
+class PhenotypeId(NodeId):
     pass
 
 
-class IndirectSupportAssociationId(extended_str):
+class AssociationId(EdgeId):
     pass
 
 
-class CombinedSupportAssociationId(extended_str):
+class SupportAssociationId(AssociationId):
     pass
 
 
@@ -131,7 +134,65 @@ class GeneSetMarginalEffectAssociationId(AssociationId):
 
 
 @dataclass(repr=False)
-class Gene(YAMLRoot):
+class Node(YAMLRoot):
+    """
+    A node in the portal KG.
+    """
+    _inherited_slots: ClassVar[List[str]] = []
+
+    class_class_uri: ClassVar[URIRef] = A2F["portal-model/Node"]
+    class_class_curie: ClassVar[str] = "a2f:portal-model/Node"
+    class_name: ClassVar[str] = "Node"
+    class_model_uri: ClassVar[URIRef] = URIRef("https://w3id.org/a2f/portal-model/Node")
+
+    id: Union[str, NodeId] = None
+
+    def __post_init__(self, *_: List[str], **kwargs: Dict[str, Any]):
+        if self._is_empty(self.id):
+            self.MissingRequiredField("id")
+        if not isinstance(self.id, NodeId):
+            self.id = NodeId(self.id)
+
+        super().__post_init__(**kwargs)
+
+
+@dataclass(repr=False)
+class Edge(YAMLRoot):
+    """
+    An edge in the portal KG.
+    """
+    _inherited_slots: ClassVar[List[str]] = []
+
+    class_class_uri: ClassVar[URIRef] = RDF["Statement"]
+    class_class_curie: ClassVar[str] = "rdf:Statement"
+    class_name: ClassVar[str] = "Edge"
+    class_model_uri: ClassVar[URIRef] = URIRef("https://w3id.org/a2f/portal-model/Edge")
+
+    id: Union[str, EdgeId] = None
+    subject: Optional[Union[str, NodeId]] = None
+    object: Optional[Union[str, NodeId]] = None
+    predicate: Optional[Union[str, URIorCURIE]] = None
+
+    def __post_init__(self, *_: List[str], **kwargs: Dict[str, Any]):
+        if self._is_empty(self.id):
+            self.MissingRequiredField("id")
+        if not isinstance(self.id, EdgeId):
+            self.id = EdgeId(self.id)
+
+        if self.subject is not None and not isinstance(self.subject, NodeId):
+            self.subject = NodeId(self.subject)
+
+        if self.object is not None and not isinstance(self.object, NodeId):
+            self.object = NodeId(self.object)
+
+        if self.predicate is not None and not isinstance(self.predicate, URIorCURIE):
+            self.predicate = URIorCURIE(self.predicate)
+
+        super().__post_init__(**kwargs)
+
+
+@dataclass(repr=False)
+class Gene(Node):
     """
     A region (or regions) that includes all of the sequence elements necessary to encode a functional transcript. A
     gene locus may include regulatory regions, transcribed regions and/or other functional sequence regions.
@@ -164,7 +225,7 @@ class Gene(YAMLRoot):
 
 
 @dataclass(repr=False)
-class Phenotype(YAMLRoot):
+class Phenotype(Node):
     """
     A phenotype is a property of an organism that can be measured or observed.
     """
@@ -204,7 +265,7 @@ class Phenotype(YAMLRoot):
 
 
 @dataclass(repr=False)
-class Association(YAMLRoot):
+class Association(Edge):
     """
     An association between a gene and a trait.
     """
@@ -216,8 +277,8 @@ class Association(YAMLRoot):
     class_model_uri: ClassVar[URIRef] = URIRef("https://w3id.org/a2f/portal-model/Association")
 
     id: Union[str, AssociationId] = None
-    gene: Optional[Union[str, GeneId]] = None
-    phenotype: Optional[Union[str, PhenotypeId]] = None
+    subject: Optional[Union[str, GeneId]] = None
+    object: Optional[Union[str, PhenotypeId]] = None
 
     def __post_init__(self, *_: List[str], **kwargs: Dict[str, Any]):
         if self._is_empty(self.id):
@@ -225,116 +286,50 @@ class Association(YAMLRoot):
         if not isinstance(self.id, AssociationId):
             self.id = AssociationId(self.id)
 
-        if self.gene is not None and not isinstance(self.gene, GeneId):
-            self.gene = GeneId(self.gene)
+        if self.subject is not None and not isinstance(self.subject, GeneId):
+            self.subject = GeneId(self.subject)
 
-        if self.phenotype is not None and not isinstance(self.phenotype, PhenotypeId):
-            self.phenotype = PhenotypeId(self.phenotype)
-
-        super().__post_init__(**kwargs)
-
-
-@dataclass(repr=False)
-class DirectSupportAssociation(Association):
-    """
-    A direct support association between a gene and a trait.
-    """
-    _inherited_slots: ClassVar[List[str]] = []
-
-    class_class_uri: ClassVar[URIRef] = A2F["portal-model/DirectSupportAssociation"]
-    class_class_curie: ClassVar[str] = "a2f:portal-model/DirectSupportAssociation"
-    class_name: ClassVar[str] = "DirectSupportAssociation"
-    class_model_uri: ClassVar[URIRef] = URIRef("https://w3id.org/a2f/portal-model/DirectSupportAssociation")
-
-    id: Union[str, DirectSupportAssociationId] = None
-    gene: Optional[Union[str, GeneId]] = None
-    phenotype: Optional[Union[str, PhenotypeId]] = None
-    score: Optional[Union[dict, "Score"]] = None
-
-    def __post_init__(self, *_: List[str], **kwargs: Dict[str, Any]):
-        if self._is_empty(self.id):
-            self.MissingRequiredField("id")
-        if not isinstance(self.id, DirectSupportAssociationId):
-            self.id = DirectSupportAssociationId(self.id)
-
-        if self.gene is not None and not isinstance(self.gene, GeneId):
-            self.gene = GeneId(self.gene)
-
-        if self.phenotype is not None and not isinstance(self.phenotype, PhenotypeId):
-            self.phenotype = PhenotypeId(self.phenotype)
-
-        if self.score is not None and not isinstance(self.score, Score):
-            self.score = Score()
+        if self.object is not None and not isinstance(self.object, PhenotypeId):
+            self.object = PhenotypeId(self.object)
 
         super().__post_init__(**kwargs)
 
 
 @dataclass(repr=False)
-class IndirectSupportAssociation(YAMLRoot):
+class SupportAssociation(Association):
     """
-    An indirect support association between a gene and a trait.
+    An association between a gene and a trait in which a phenotype or trait is supported by the gene.
     """
     _inherited_slots: ClassVar[List[str]] = []
 
-    class_class_uri: ClassVar[URIRef] = A2F["portal-model/IndirectSupportAssociation"]
-    class_class_curie: ClassVar[str] = "a2f:portal-model/IndirectSupportAssociation"
-    class_name: ClassVar[str] = "IndirectSupportAssociation"
-    class_model_uri: ClassVar[URIRef] = URIRef("https://w3id.org/a2f/portal-model/IndirectSupportAssociation")
+    class_class_uri: ClassVar[URIRef] = A2F["portal-model/SupportAssociation"]
+    class_class_curie: ClassVar[str] = "a2f:portal-model/SupportAssociation"
+    class_name: ClassVar[str] = "SupportAssociation"
+    class_model_uri: ClassVar[URIRef] = URIRef("https://w3id.org/a2f/portal-model/SupportAssociation")
 
-    id: Union[str, IndirectSupportAssociationId] = None
-    gene: Optional[Union[str, GeneId]] = None
-    phenotype: Optional[Union[str, PhenotypeId]] = None
-    score: Optional[Union[dict, "Score"]] = None
+    id: Union[str, SupportAssociationId] = None
+    direct_support: Optional[Union[dict, "DirectSupportScore"]] = None
+    indirect_support: Optional[Union[dict, "IndirectSupportScore"]] = None
+    combined_support: Optional[Union[dict, "CombinedSupportScore"]] = None
+    predicate: Optional[Union[str, URIorCURIE]] = None
 
     def __post_init__(self, *_: List[str], **kwargs: Dict[str, Any]):
         if self._is_empty(self.id):
             self.MissingRequiredField("id")
-        if not isinstance(self.id, IndirectSupportAssociationId):
-            self.id = IndirectSupportAssociationId(self.id)
+        if not isinstance(self.id, SupportAssociationId):
+            self.id = SupportAssociationId(self.id)
 
-        if self.gene is not None and not isinstance(self.gene, GeneId):
-            self.gene = GeneId(self.gene)
+        if self.direct_support is not None and not isinstance(self.direct_support, DirectSupportScore):
+            self.direct_support = DirectSupportScore(**as_dict(self.direct_support))
 
-        if self.phenotype is not None and not isinstance(self.phenotype, PhenotypeId):
-            self.phenotype = PhenotypeId(self.phenotype)
+        if self.indirect_support is not None and not isinstance(self.indirect_support, IndirectSupportScore):
+            self.indirect_support = IndirectSupportScore(**as_dict(self.indirect_support))
 
-        if self.score is not None and not isinstance(self.score, Score):
-            self.score = Score()
+        if self.combined_support is not None and not isinstance(self.combined_support, CombinedSupportScore):
+            self.combined_support = CombinedSupportScore(**as_dict(self.combined_support))
 
-        super().__post_init__(**kwargs)
-
-
-@dataclass(repr=False)
-class CombinedSupportAssociation(YAMLRoot):
-    """
-    A combined support association between a gene and a trait.
-    """
-    _inherited_slots: ClassVar[List[str]] = []
-
-    class_class_uri: ClassVar[URIRef] = A2F["portal-model/CombinedSupportAssociation"]
-    class_class_curie: ClassVar[str] = "a2f:portal-model/CombinedSupportAssociation"
-    class_name: ClassVar[str] = "CombinedSupportAssociation"
-    class_model_uri: ClassVar[URIRef] = URIRef("https://w3id.org/a2f/portal-model/CombinedSupportAssociation")
-
-    id: Union[str, CombinedSupportAssociationId] = None
-    gene: Optional[Union[str, GeneId]] = None
-    phenotype: Optional[Union[str, PhenotypeId]] = None
-    score: Optional[Union[dict, "Score"]] = None
-
-    def __post_init__(self, *_: List[str], **kwargs: Dict[str, Any]):
-        if self._is_empty(self.id):
-            self.MissingRequiredField("id")
-        if not isinstance(self.id, CombinedSupportAssociationId):
-            self.id = CombinedSupportAssociationId(self.id)
-
-        if self.gene is not None and not isinstance(self.gene, GeneId):
-            self.gene = GeneId(self.gene)
-
-        if self.phenotype is not None and not isinstance(self.phenotype, PhenotypeId):
-            self.phenotype = PhenotypeId(self.phenotype)
-
-        if self.score is not None and not isinstance(self.score, Score):
-            self.score = Score()
+        if self.predicate is not None and not isinstance(self.predicate, URIorCURIE):
+            self.predicate = URIorCURIE(self.predicate)
 
         super().__post_init__(**kwargs)
 
@@ -497,6 +492,7 @@ class Score(YAMLRoot):
     class_model_uri: ClassVar[URIRef] = URIRef("https://w3id.org/a2f/portal-model/Score")
 
 
+@dataclass(repr=False)
 class DirectSupportScore(Score):
     """
     The direct genetic support a gene has for a trait expressed in log odds.
@@ -508,7 +504,16 @@ class DirectSupportScore(Score):
     class_name: ClassVar[str] = "DirectSupportScore"
     class_model_uri: ClassVar[URIRef] = URIRef("https://w3id.org/a2f/portal-model/DirectSupportScore")
 
+    log_odds: Optional[float] = None
 
+    def __post_init__(self, *_: List[str], **kwargs: Dict[str, Any]):
+        if self.log_odds is not None and not isinstance(self.log_odds, float):
+            self.log_odds = float(self.log_odds)
+
+        super().__post_init__(**kwargs)
+
+
+@dataclass(repr=False)
 class IndirectSupportScore(YAMLRoot):
     """
     The indirect genetic support a gene has for a trait expressed in log odds.
@@ -520,7 +525,16 @@ class IndirectSupportScore(YAMLRoot):
     class_name: ClassVar[str] = "IndirectSupportScore"
     class_model_uri: ClassVar[URIRef] = URIRef("https://w3id.org/a2f/portal-model/IndirectSupportScore")
 
+    log_odds: Optional[float] = None
 
+    def __post_init__(self, *_: List[str], **kwargs: Dict[str, Any]):
+        if self.log_odds is not None and not isinstance(self.log_odds, float):
+            self.log_odds = float(self.log_odds)
+
+        super().__post_init__(**kwargs)
+
+
+@dataclass(repr=False)
 class CombinedSupportScore(Score):
     """
     The combined genetic support a gene has for a trait expressed in log odds.
@@ -531,6 +545,14 @@ class CombinedSupportScore(Score):
     class_class_curie: ClassVar[str] = "a2f:portal-model/CombinedSupportScore"
     class_name: ClassVar[str] = "CombinedSupportScore"
     class_model_uri: ClassVar[URIRef] = URIRef("https://w3id.org/a2f/portal-model/CombinedSupportScore")
+
+    log_odds: Optional[float] = None
+
+    def __post_init__(self, *_: List[str], **kwargs: Dict[str, Any]):
+        if self.log_odds is not None and not isinstance(self.log_odds, float):
+            self.log_odds = float(self.log_odds)
+
+        super().__post_init__(**kwargs)
 
 
 class MarginalEffectScore(Score):
@@ -567,6 +589,15 @@ class slots:
 slots.id = Slot(uri=DEFAULT_.id, name="id", curie=DEFAULT_.curie('id'),
                    model_uri=DEFAULT_.id, domain=None, range=URIRef)
 
+slots.subject = Slot(uri=DEFAULT_.subject, name="subject", curie=DEFAULT_.curie('subject'),
+                   model_uri=DEFAULT_.subject, domain=None, range=Optional[Union[str, NodeId]])
+
+slots.object = Slot(uri=DEFAULT_.object, name="object", curie=DEFAULT_.curie('object'),
+                   model_uri=DEFAULT_.object, domain=None, range=Optional[Union[str, NodeId]])
+
+slots.predicate = Slot(uri=DEFAULT_.predicate, name="predicate", curie=DEFAULT_.curie('predicate'),
+                   model_uri=DEFAULT_.predicate, domain=None, range=Optional[Union[str, URIorCURIE]])
+
 slots.symbol = Slot(uri=DEFAULT_.symbol, name="symbol", curie=DEFAULT_.curie('symbol'),
                    model_uri=DEFAULT_.symbol, domain=None, range=Optional[str])
 
@@ -591,14 +622,47 @@ slots.score = Slot(uri=DEFAULT_.score, name="score", curie=DEFAULT_.curie('score
 slots.gene_set = Slot(uri=DEFAULT_.gene_set, name="gene_set", curie=DEFAULT_.curie('gene_set'),
                    model_uri=DEFAULT_.gene_set, domain=None, range=Optional[Union[str, GeneSetId]])
 
+slots.log_odds = Slot(uri=DEFAULT_.log_odds, name="log_odds", curie=DEFAULT_.curie('log_odds'),
+                   model_uri=DEFAULT_.log_odds, domain=None, range=Optional[float])
+
+slots.supports = Slot(uri=DEFAULT_.supports, name="supports", curie=DEFAULT_.curie('supports'),
+                   model_uri=DEFAULT_.supports, domain=Gene, range=Optional[Union[str, PhenotypeId]])
+
 slots.gene__has_xrefs = Slot(uri=DEFAULT_.has_xrefs, name="gene__has_xrefs", curie=DEFAULT_.curie('has_xrefs'),
                    model_uri=DEFAULT_.gene__has_xrefs, domain=None, range=Optional[Union[str, List[str]]])
 
 slots.phenotype__has_xrefs = Slot(uri=DEFAULT_.has_xrefs, name="phenotype__has_xrefs", curie=DEFAULT_.curie('has_xrefs'),
                    model_uri=DEFAULT_.phenotype__has_xrefs, domain=None, range=Optional[Union[str, List[str]]])
 
+slots.supportAssociation__direct_support = Slot(uri=DEFAULT_.direct_support, name="supportAssociation__direct_support", curie=DEFAULT_.curie('direct_support'),
+                   model_uri=DEFAULT_.supportAssociation__direct_support, domain=None, range=Optional[Union[dict, DirectSupportScore]])
+
+slots.supportAssociation__indirect_support = Slot(uri=DEFAULT_.indirect_support, name="supportAssociation__indirect_support", curie=DEFAULT_.curie('indirect_support'),
+                   model_uri=DEFAULT_.supportAssociation__indirect_support, domain=None, range=Optional[Union[dict, IndirectSupportScore]])
+
+slots.supportAssociation__combined_support = Slot(uri=DEFAULT_.combined_support, name="supportAssociation__combined_support", curie=DEFAULT_.curie('combined_support'),
+                   model_uri=DEFAULT_.supportAssociation__combined_support, domain=None, range=Optional[Union[dict, CombinedSupportScore]])
+
 slots.gwas__has_xrefs = Slot(uri=DEFAULT_.has_xrefs, name="gwas__has_xrefs", curie=DEFAULT_.curie('has_xrefs'),
                    model_uri=DEFAULT_.gwas__has_xrefs, domain=None, range=Optional[Union[str, List[str]]])
 
 slots.geneSet__has_xrefs = Slot(uri=DEFAULT_.has_xrefs, name="geneSet__has_xrefs", curie=DEFAULT_.curie('has_xrefs'),
                    model_uri=DEFAULT_.geneSet__has_xrefs, domain=None, range=Optional[Union[str, List[str]]])
+
+slots.Edge_subject = Slot(uri=RDF.subject, name="Edge_subject", curie=RDF.curie('subject'),
+                   model_uri=DEFAULT_.Edge_subject, domain=Edge, range=Optional[Union[str, NodeId]])
+
+slots.Edge_object = Slot(uri=RDF.object, name="Edge_object", curie=RDF.curie('object'),
+                   model_uri=DEFAULT_.Edge_object, domain=Edge, range=Optional[Union[str, NodeId]])
+
+slots.Edge_predicate = Slot(uri=RDF.predicate, name="Edge_predicate", curie=RDF.curie('predicate'),
+                   model_uri=DEFAULT_.Edge_predicate, domain=Edge, range=Optional[Union[str, URIorCURIE]])
+
+slots.Association_subject = Slot(uri=DEFAULT_.subject, name="Association_subject", curie=DEFAULT_.curie('subject'),
+                   model_uri=DEFAULT_.Association_subject, domain=Association, range=Optional[Union[str, GeneId]])
+
+slots.Association_object = Slot(uri=DEFAULT_.object, name="Association_object", curie=DEFAULT_.curie('object'),
+                   model_uri=DEFAULT_.Association_object, domain=Association, range=Optional[Union[str, PhenotypeId]])
+
+slots.SupportAssociation_predicate = Slot(uri=DEFAULT_.predicate, name="SupportAssociation_predicate", curie=DEFAULT_.curie('predicate'),
+                   model_uri=DEFAULT_.SupportAssociation_predicate, domain=SupportAssociation, range=Optional[Union[str, URIorCURIE]])
