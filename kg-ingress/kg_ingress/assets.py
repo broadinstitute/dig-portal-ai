@@ -130,7 +130,7 @@ def transform_gene_phenotype_data(gene_phenotype_data, phenotype_index):
                 object=phenotype_index[item["phenotype"]].id,
                 predicate="PORTALLINK:supports",
                 combined_support=CombinedSupportScore(log_odds=item["combined"]),
-                direct_support=DirectSupportScore(log_odds=item["log_bf"]),
+                direct_support=DirectSupportScore(log_odds=item.get("log_bf", 0.0)),
                 indirect_support=IndirectSupportScore(log_odds=item["prior"])
             )
             associations.append(association)
