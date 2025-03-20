@@ -122,17 +122,21 @@ def transform_gene_phenotype_data(gene_phenotype_data, phenotype_index):
                 symbol=item["gene"],
             )
             genes[item["gene"]] = gene
-        # Create association node
-        association = SupportAssociation(
-            id=f'sa-{uuid.uuid4()}',    
-            subject=genes[item["gene"]].id,
-            object=phenotype_index[item["phenotype"]].id,
-            predicate="PORTALLINK:supports",
-            combined_support=CombinedSupportScore(log_odds=item["combined"]),
-            direct_support=DirectSupportScore(log_odds=item["log_bf"]),
-            indirect_support=IndirectSupportScore(log_odds=item["prior"])
-        )
-        associations.append(association)
+        try:
+            # Create association node
+            association = SupportAssociation(
+                id=f'sa-{uuid.uuid4()}',
+                subject=genes[item["gene"]].id,
+                object=phenotype_index[item["phenotype"]].id,
+                predicate="PORTALLINK:supports",
+                combined_support=CombinedSupportScore(log_odds=item["combined"]),
+                direct_support=DirectSupportScore(log_odds=item["log_bf"]),
+                indirect_support=IndirectSupportScore(log_odds=item["prior"])
+            )
+            associations.append(association)
+        except KeyError as e:
+            print(f"Error when processing gene {item}: {e}")
+
 
     # Collect all genes
     genes = list(genes.values())
