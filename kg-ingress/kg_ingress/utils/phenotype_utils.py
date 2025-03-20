@@ -95,7 +95,7 @@ def create_gcat_phenotype(gcat_phenotype_info: pd.DataFrame, phenotype: str, phe
     phenotypes = []
     studies = []
     if gcat_info.empty:
-        return None
+        return None, None
     study_info = gcat_info[["processed_trait_name", "STUDY ACCESSION", "STUDY"]].drop_duplicates()
     xrefs = gcat_info[["processed_trait_name", "processed_curie"]].drop_duplicates()
     # Make single phenotype and grab xrefs
