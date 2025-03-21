@@ -40,6 +40,7 @@ if __name__ == "__main__":
     # Set up command line arguments for flexible execution
     parser = argparse.ArgumentParser()
     parser.add_argument("--test", action="store_true", help="Run in test mode")
+    parser.add_argument("--test-size", action="store", type=int, default=10, help="Limit in test mode")
     parser.add_argument("--verbose", action="store_true", help="Run in verbose mode")
     parser.add_argument("--clean-db", action="store_true", help="Clean the database before running")
     parser.add_argument("--log-level", type=str, default="INFO", help="Set the log level")
@@ -62,7 +63,7 @@ if __name__ == "__main__":
     data = fetch_phenotype_data()
     if args.test:
         logger.debug("Running in test mode")
-        data = data[:10]  # Limit data for testing
+        data = data[:args.test_size]  # Limit data for testing
         
     # 2. Transform raw phenotype data into structured objects
     logger.info("Transforming phenotype data")
@@ -83,7 +84,7 @@ if __name__ == "__main__":
         # Fetch gene associations from bioindex API
         data = fetch_gene_phenotype_data(phenotype.name)
         if args.test:
-            data = data[:10]
+            data = data[:args.test_size]  # Limit data for testing
         # Transform gene data and create association objects
         _genes, _associations = transform_gene_phenotype_data(data, phenotype_index) 
         genes.extend(_genes)
