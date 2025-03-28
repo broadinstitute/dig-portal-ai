@@ -44,6 +44,7 @@ if __name__ == "__main__":
     parser.add_argument("--verbose", action="store_true", help="Run in verbose mode")
     parser.add_argument("--clean-db", action="store_true", help="Clean the database before running")
     parser.add_argument("--log-level", type=str, default="INFO", help="Set the log level")
+    parser.add_argument("--phenos", help="Comma-separated list of phenotypes to process", default=None)
     args = parser.parse_args()
 
     # Set log level based on argument
@@ -61,6 +62,10 @@ if __name__ == "__main__":
     # 1. Fetch phenotype data from bioindex API
     logger.info("Fetching phenotype data")
     data = fetch_phenotype_data()
+    if args.phenos:
+        # Filter data based on specified phenotypes
+        selected_phenos = set(args.phenos.split(","))
+        data = [item for item in data if item["phenotype"] in selected_phenos]
     if args.test:
         logger.debug("Running in test mode")
         data = data[:args.test_size]  # Limit data for testing
