@@ -76,9 +76,8 @@ if __name__ == "__main__":
     # 4. Process gene-phenotype associations
     # Create an index of phenotypes for quick lookup
     phenotype_index = {p.name: p for p in transformed if isinstance(p, Phenotype)}
-    genes = []
-    associations = []
-    
+    genes_dir = {}
+
     # For each phenotype, fetch and process associated genes
     for _, phenotype in tqdm.tqdm(phenotype_index.items(), desc='Processing gene phenotype associations'):
         # Fetch gene associations from bioindex API
@@ -86,12 +85,12 @@ if __name__ == "__main__":
         if args.test:
             data = data[:args.test_size]  # Limit data for testing
         # Transform gene data and create association objects
-        _genes, _associations = transform_gene_phenotype_data(data, phenotype_index) 
-        genes.extend(_genes)
-        associations.extend(_associations)
-        
+        genes, associations = transform_gene_phenotype_data(data, phenotype_index)
+        for gene in genes:
+            genes_dir[gene.id] = gene
+        insert_data(associations, driver=driver)
+
     # 5. Insert genes and their associations into Neo4j
-    insert_data(genes, driver=driver) 
-    insert_data(associations, driver=driver)
-    
+    insert_data(genes_dir.values(), driver=driver)
+
     logger.info("Done")
