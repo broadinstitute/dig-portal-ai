@@ -40,9 +40,11 @@ if __name__ == "__main__":
     # Set up command line arguments for flexible execution
     parser = argparse.ArgumentParser()
     parser.add_argument("--test", action="store_true", help="Run in test mode")
+    parser.add_argument("--test-size", action="store", type=int, default=10, help="Limit in test mode")
     parser.add_argument("--verbose", action="store_true", help="Run in verbose mode")
     parser.add_argument("--clean-db", action="store_true", help="Clean the database before running")
     parser.add_argument("--log-level", type=str, default="INFO", help="Set the log level")
+    parser.add_argument("--phenos", help="Comma-separated list of phenotypes to process", default=None)
     args = parser.parse_args()
 
     # Set log level based on argument
@@ -60,9 +62,13 @@ if __name__ == "__main__":
     # 1. Fetch phenotype data from bioindex API
     logger.info("Fetching phenotype data")
     data = fetch_phenotype_data()
+    if args.phenos:
+        # Filter data based on specified phenotypes
+        selected_phenos = set(args.phenos.split(","))
+        data = [item for item in data if item["phenotype"] in selected_phenos]
     if args.test:
         logger.debug("Running in test mode")
-        data = data[:10]  # Limit data for testing
+        data = data[:args.test_size]  # Limit data for testing
         
     # 2. Transform raw phenotype data into structured objects
     logger.info("Transforming phenotype data")
@@ -75,22 +81,21 @@ if __name__ == "__main__":
     # 4. Process gene-phenotype associations
     # Create an index of phenotypes for quick lookup
     phenotype_index = {p.name: p for p in transformed if isinstance(p, Phenotype)}
-    genes = []
-    associations = []
-    
+    genes_dir = {}
+
     # For each phenotype, fetch and process associated genes
     for _, phenotype in tqdm.tqdm(phenotype_index.items(), desc='Processing gene phenotype associations'):
         # Fetch gene associations from bioindex API
         data = fetch_gene_phenotype_data(phenotype.name)
         if args.test:
-            data = data[:10]
+            data = data[:args.test_size]  # Limit data for testing
         # Transform gene data and create association objects
-        _genes, _associations = transform_gene_phenotype_data(data, phenotype_index) 
-        genes.extend(_genes)
-        associations.extend(_associations)
-        
+        genes, associations = transform_gene_phenotype_data(data, phenotype_index)
+        for gene in genes:
+            genes_dir[gene.id] = gene
+        insert_data(associations, driver=driver)
+
     # 5. Insert genes and their associations into Neo4j
-    insert_data(genes, driver=driver) 
-    insert_data(associations, driver=driver)
-    
+    insert_data(genes_dir.values(), driver=driver)
+
     logger.info("Done")

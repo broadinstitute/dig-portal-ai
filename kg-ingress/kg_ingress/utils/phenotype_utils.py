@@ -37,20 +37,20 @@ def lookup_trait_with_db_refs(orphanet_owl: Graph, orpha_id: str) -> dict:
     :return: Dictionary with trait details including database references
     """
 
+    trait_uri = f"http://www.orpha.net/ORDO/Orphanet_{orpha_id}"
     query = f"""
     PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
     PREFIX efo: <http://www.ebi.ac.uk/efo/>
     PREFIX owl: <http://www.w3.org/2002/07/owl#>
     PREFIX oboInOwl: <http://www.geneontology.org/formats/oboInOwl#>
 
-    SELECT ?trait ?label ?description ?db_xref
+    SELECT ?label ?description ?db_xref
     WHERE {{
-        ?trait a owl:Class .
-        ?trait rdfs:label ?label .
-        OPTIONAL {{ ?trait efo:definition ?description . }}
-        OPTIONAL {{ ?trait oboInOwl:hasDbXref ?db_xref . }}
+        <{trait_uri}> a owl:Class .
+        <{trait_uri}> rdfs:label ?label .
+        OPTIONAL {{ <{trait_uri}> efo:definition ?description . }}
+        OPTIONAL {{ <{trait_uri}> oboInOwl:hasDbXref ?db_xref . }}
         
-        FILTER(STRSTARTS(STR(?trait), "http://www.orpha.net/ORDO/Orphanet_{orpha_id}"))
     }}
     """
 
@@ -66,7 +66,7 @@ def lookup_trait_with_db_refs(orphanet_owl: Graph, orpha_id: str) -> dict:
 
     for row in results:
         if trait_info["Trait URI"] is None:
-            trait_info["Trait URI"] = str(row.trait)
+            trait_info["Trait URI"] = str(trait_uri)
             trait_info["Label"] = str(row.label)
             trait_info["Description"] = str(row.description) if row.description else "No description available"
         
@@ -95,7 +95,7 @@ def create_gcat_phenotype(gcat_phenotype_info: pd.DataFrame, phenotype: str, phe
     phenotypes = []
     studies = []
     if gcat_info.empty:
-        return None
+        return None, None
     study_info = gcat_info[["processed_trait_name", "STUDY ACCESSION", "STUDY"]].drop_duplicates()
     xrefs = gcat_info[["processed_trait_name", "processed_curie"]].drop_duplicates()
     # Make single phenotype and grab xrefs
