@@ -13,6 +13,9 @@ dependencies = [
     "requests",
     "mcp[cli]",
     "sentence-transformers>=4.1.0",
+    "flask",
+    "flask-cors",
+    "gunicorn"
 ]
 
 [project.optional-dependencies]

@@ -1,0 +1,3 @@
+[submodule "portal-ai-3"]
+	path = portal-ai-3
+	url = https://github.com/openai/openai-assistants-quickstart.git
