@@ -122,6 +122,7 @@ export default function Chat({
     if (!response.body) throw new Error('No stream returned.')
     const stream = AssistantStream.fromReadableStream(response.body);
     handleReadableStream(stream);
+    setStreamStatus(null);
   };
 
   const submitActionResult = async (
