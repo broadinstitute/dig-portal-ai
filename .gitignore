@@ -153,3 +153,4 @@ __pycache__/
 *.tfstate.backup
 *.tfvars
 *.tfvars.json
+*.terraform.lock.hcl
