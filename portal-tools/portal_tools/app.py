@@ -1,9 +1,20 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import portal_tools.tools.pigean as pigean
+import os
+from sentence_transformers import SentenceTransformer
 
 app = Flask(__name__)
 CORS(app)
+
+# Setup in memory cache
+
+model = SentenceTransformer('all-MiniLM-L6-v2')
+print('Fetching phenotype data...')
+portal_phenotypes = pigean.fetch_phenotype_data()
+portal_names = [item['phenotype_name'] for item in portal_phenotypes]
+portal_names_embeddings = model.encode(portal_names)
+print('Done!')
 
 @app.route('/search_phenotypes', methods=['POST'])
 def search_phenotypes():
@@ -11,7 +22,7 @@ def search_phenotypes():
     search_query = data.get('query')
     if search_query is None:
         return jsonify({'error': 'Both "query" is required'}), 400
-    result = pigean.search_phenotypes(search_query)
+    result = pigean.search_phenotypes(search_query, portal_names_embeddings, model, portal_phenotypes)
     return jsonify({'result': result})
 
 @app.route('/get_top_genes', methods=['POST'])
@@ -41,7 +52,6 @@ def get_factors():
 @app.route('/get_genesets', methods=['POST'])
 def get_genesets():
     data = request.get_json()
-    print(data)
     phenotype_id = data.get('phenotype_id')
     sigma = data.get('sigma', 2)
     geneset_size = data.get('geneset_size', 'small')
@@ -54,5 +64,5 @@ def get_genesets():
     
     
 if __name__ == '__main__':
-    port = int(os.environ.get("PORT", 5000))  # default to 5000 locally
+    port = int(os.environ.get("PORT", 5005))  # default to 5000 locally
     app.run(host="0.0.0.0", port=port)

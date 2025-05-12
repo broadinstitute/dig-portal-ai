@@ -8,6 +8,9 @@ resource "google_cloud_run_v2_service" "backend" {
   location = var.region
   ingress  = "INGRESS_TRAFFIC_ALL"
 
+  deletion_protection = false
+
+
   template {
     containers {
       image = var.image_url
@@ -23,8 +26,11 @@ resource "google_cloud_run_v2_service" "backend" {
   }
 }
 
-resource "google_project_iam_member" "run_invoker" {
-  project = var.project_id
-  role    = "roles/run.invoker"
-  member  = "allUsers" # public access — change for auth
+resource "google_cloud_run_service_iam_member" "run_invoker" {
+  location = "us-central1"
+  project  = "simage-main"
+  service  = google_cloud_run_v2_service.backend.name
+
+  role   = "roles/run.invoker"
+  member = "allUsers"
 }

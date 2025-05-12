@@ -3,6 +3,7 @@ import requests
 from sentence_transformers import SentenceTransformer
 import numpy as np
 
+
 def fetch_phenotype_data():
     """
     Fetches phenotype data from the bioindex API using pagination.
@@ -31,21 +32,14 @@ def fetch_phenotype_data():
         
     return all_data
 
-def search_phenotypes(phenotype_name, top_n=50):
+def search_phenotypes(phenotype_name, phenotype_names_embeddings, model, phenotype_data, top_n=50):
     """
     Finds phenotype data for a given phenotype name.
     """
-    phenotype_data = fetch_phenotype_data()
-    # Initialize the sentence transformer
-    model = SentenceTransformer('all-MiniLM-L6-v2')
-    # Embed the phenotype name
-    phenotype_name_embedding = model.encode(phenotype_name)
-    # Find the phenotype with the most similar name
-    portal_names = [item['phenotype_name'] for item in phenotype_data]
-    portal_names_embeddings = model.encode(portal_names)
     # Calculate the cosine similarity between the phenotype name and the portal names
-    similarities = model.similarity(phenotype_name_embedding, portal_names_embeddings)[-1]
-    print(similarities.shape)
+    phenotype_name_embedding = model.encode(phenotype_name)
+    # Calculate the cosine similarity between the phenotype name and the portal names
+    similarities = model.similarity(phenotype_name_embedding, phenotype_names_embeddings)[-1]
     # Get the indices of the top N most similar phenotypes
     top_indices = np.argsort(similarities)[-top_n:]
     top_phenotypes = []
@@ -57,7 +51,6 @@ def search_phenotypes(phenotype_name, top_n=50):
         })
     # Sort the top phenotypes by cosine similarity in descending order
     top_phenotypes = sorted(top_phenotypes, key=lambda x: x['cosine_similarity'], reverse=True)
-    print(top_phenotypes)
     # Return the top N phenotype matches
     return top_phenotypes
 
