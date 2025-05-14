@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import portal_tools.tools.pigean as pigean
+from portal_tools.tools.cypher_utils import run_cypher
 import os
 from sentence_transformers import SentenceTransformer
 
@@ -63,6 +64,17 @@ def get_genesets():
     return jsonify({'result': result})
     
     
+@app.route('/get_cipher', methods=['POST'])
+def get_cipher():
+    data = request.get_json()
+    cypher_query = data.get('cypher_query')
+    if cypher_query is None:
+        return jsonify({'error': '"cypher_query" is required'}), 400
+    result = run_cypher(cypher_query=cypher_query)
+    return jsonify({'result': result})
+    
+
+
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5005))  # default to 5000 locally
     app.run(host="0.0.0.0", port=port)
