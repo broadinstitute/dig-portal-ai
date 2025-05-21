@@ -32,27 +32,56 @@ def fetch_phenotype_data():
         
     return all_data
 
-def search_phenotypes(phenotype_name, phenotype_names_embeddings, model, phenotype_data, top_n=50):
+def search_phenotypes(phenotype_names, phenotype_names_embeddings, model, phenotype_data, top_n=50):
     """
-    Finds phenotype data for a given phenotype name.
+    Finds top N most similar phenotypes for each query in phenotype_names.
+    
+    Args:
+        phenotype_names: List of phenotype name queries (strings)
+        phenotype_names_embeddings: np.ndarray of all portal phenotype name embeddings
+        model: SentenceTransformer model
+        phenotype_data: List of all phenotype dicts (from fetch_phenotype_data)
+        top_n: Number of top matches to return per query
+
+    Returns:
+        List of dicts, one per query, each containing:
+            - 'query': the input query string
+            - 'results': list of top N matches (dicts with id, name, cosine_similarity)
     """
-    # Calculate the cosine similarity between the phenotype name and the portal names
-    phenotype_name_embedding = model.encode(phenotype_name)
-    # Calculate the cosine similarity between the phenotype name and the portal names
-    similarities = model.similarity(phenotype_name_embedding, phenotype_names_embeddings)[-1]
-    # Get the indices of the top N most similar phenotypes
-    top_indices = np.argsort(similarities)[-top_n:]
-    top_phenotypes = []
-    for i in top_indices:
-        top_phenotypes.append({
-            'id': phenotype_data[i]['phenotype'],
-            'name': phenotype_data[i]['phenotype_name'],
-            'cosine_similarity': float(similarities[i])
+    # Encode all queries at once
+    query_embeddings = model.encode(phenotype_names)
+    # Compute cosine similarity between each query and all portal names
+    # If using sentence_transformers, use util.cos_sim for batch computation
+    try:
+        from sentence_transformers.util import cos_sim
+        similarities = cos_sim(query_embeddings, phenotype_names_embeddings).cpu().numpy()
+    except ImportError:
+        # fallback: manual cosine similarity
+        def cosine_similarity(a, b):
+            a_norm = a / np.linalg.norm(a, axis=1, keepdims=True)
+            b_norm = b / np.linalg.norm(b, axis=1, keepdims=True)
+            return np.dot(a_norm, b_norm.T)
+        similarities = cosine_similarity(np.array(query_embeddings), np.array(phenotype_names_embeddings))
+    
+    results = []
+    for idx, query in enumerate(phenotype_names):
+        sim_scores = similarities[idx]
+        # Get indices of top N most similar phenotypes
+        top_indices = np.argsort(sim_scores)[-top_n:]
+        top_phenotypes = []
+        for i in reversed(top_indices):  # reversed to get descending order
+            top_phenotypes.append({
+                'id': phenotype_data[i]['phenotype'],
+                'name': phenotype_data[i]['phenotype_name'],
+                'cosine_similarity': float(sim_scores[i])
+            })
+        # Sort by cosine similarity descending
+        top_phenotypes = sorted(top_phenotypes, key=lambda x: x['cosine_similarity'], reverse=True)
+        results.append({
+            'query': query,
+            'results': top_phenotypes
         })
-    # Sort the top phenotypes by cosine similarity in descending order
-    top_phenotypes = sorted(top_phenotypes, key=lambda x: x['cosine_similarity'], reverse=True)
-    # Return the top N phenotype matches
-    return top_phenotypes
+    return results
 
 def fetch_gene_phenotype_data(phenotype_id, sigma=2, geneset_size='small'):
     """

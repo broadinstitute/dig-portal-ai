@@ -15,7 +15,9 @@ dependencies = [
     "sentence-transformers>=4.1.0",
     "flask",
     "flask-cors",
-    "gunicorn"
+    "gunicorn",
+    "neo4j",
+    "hf_xet"
 ]
 
 [project.optional-dependencies]

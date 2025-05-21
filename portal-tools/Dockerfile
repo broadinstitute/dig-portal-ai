@@ -1,28 +1,37 @@
-# Use official Python base image
-FROM python:3.11-slim
+# === Builder Stage ===
+FROM python:3.11-slim AS builder
 
-# Set work directory
 WORKDIR /app
 
-# Install uv (a fast Python package manager)
+# Install uv and other build tools (optional: gcc, libffi-dev if needed)
 RUN pip install uv
 
-# Copy dependency files first for caching
-COPY pyproject.toml uv.lock /app/
-
-# Compile a pip requirements file from your uv.lock and install dependencies
+# Copy and compile dependencies
+COPY pyproject.toml uv.lock ./
 RUN uv pip compile pyproject.toml > requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the rest of the code
-COPY . /app
+# Copy source code
+COPY . .
+
+# === Final Image ===
+FROM python:3.11-slim
+
+WORKDIR /app
 
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
-# Expose port (customize if different)
-EXPOSE 5000
+# Copy installed packages from builder
+COPY --from=builder /usr/local/lib/python3.11 /usr/local/lib/python3.11
+COPY --from=builder /usr/local/bin /usr/local/bin
 
-# Run the app (adjust if you use app.py or uvicorn, etc.)
+# Copy app source code
+COPY --from=builder /app /app
+
+# Expose port
+EXPOSE 8080
+
+# Launch command
 CMD ["gunicorn", "-b", "0.0.0.0:8080", "portal_tools.app:app"]

@@ -15,16 +15,24 @@ print('Fetching phenotype data...')
 portal_phenotypes = pigean.fetch_phenotype_data()
 portal_names = [item['phenotype_name'] for item in portal_phenotypes]
 portal_names_embeddings = model.encode(portal_names)
-print('Done!')
+print('Done! And ready to go!')
 
 @app.route('/search_phenotypes', methods=['POST'])
 def search_phenotypes():
     data = request.get_json()
-    search_query = data.get('query')
-    if search_query is None:
-        return jsonify({'error': 'Both "query" is required'}), 400
-    result = pigean.search_phenotypes(search_query, portal_names_embeddings, model, portal_phenotypes)
+    search_queries = data.get('queries')
+    if search_queries is None or not isinstance(search_queries, list):
+        return jsonify({'error': '"queries" (a list of queries) is required'}), 400
+    result = pigean.search_phenotypes(search_queries, portal_names_embeddings, model, portal_phenotypes)
     return jsonify({'result': result})
+
+@app.route('/force_phenotype_embedding_update', methods=['POST'])
+def force_phenotype_embedding_update():
+    global portal_names_embeddings
+    portal_phenotypes = pigean.fetch_phenotype_data()
+    portal_names = [item['phenotype_name'] for item in portal_phenotypes]
+    portal_names_embeddings = model.encode(portal_names)
+    return jsonify({'message': 'Phenotype embeddings updated'})
 
 @app.route('/get_top_genes', methods=['POST'])
 def get_top_genes():
