@@ -11,16 +11,17 @@ requires-python = ">=3.12"
 license = "MIT"
 dependencies = [
     "requests",
-    "mcp[cli]",
-    "sentence-transformers>=4.1.0",
-    "flask",
-    "flask-cors",
-    "gunicorn",
+    "sentence-transformers",
     "neo4j",
-    "hf_xet"
+    "hf_xet",
+    "numpy",
+    "fastmcp[http]>=2",
 ]
 
 [project.optional-dependencies]
 dev = [
     "pytest",
 ]
+
+[project.scripts]
+portal-tools-mcp = "portal_tools.mcp_server:main"

@@ -3,19 +3,30 @@
 from neo4j import GraphDatabase
 from typing import List, Dict
 import os
+import logging
 
-
-# constants
-NEO4J_IP_PORT = 'localhost:7887'
-if os.getenv('NEO4J_IP_PORT'):
-    NEO4J_IP_PORT = os.getenv('NEO4J_IP_PORT')
-NEO4J_URI = "bolt://{}".format(NEO4J_IP_PORT)
-NEO4J_USER = os.getenv('NEO4J_USER')
-NEO4J_PASSWORD = os.getenv('NEO4J_PASSWORD')
+logger = logging.getLogger(__name__)
 
 # Neo4j driver
-driver = GraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASSWORD))
+driver = None
 
+
+def initialize_neo4j_driver(neo4j_ip_port: str, neo4j_user: str, neo4j_password: str, log=False):
+    """Initialize the Neo4j driver"""
+    global driver
+    logger.info("Initializing Neo4j driver...")
+    logger.info("neo4j_ip_port: {}".format(neo4j_ip_port))
+    logger.info("neo4j_user: {}".format(neo4j_user))
+    logger.info("neo4j_password: {}".format(neo4j_password))
+    driver = GraphDatabase.driver(neo4j_ip_port, auth=(neo4j_user, neo4j_password))
+    logger.info("Neo4j driver initialized")
+    # test connection
+    try:
+        driver.verify_connectivity()
+        logger.info("Connected to Neo4j")
+    except Exception as e:
+        logger.error("Failed to connect to Neo4j: {}".format(e))
+    return driver
 
 # methods
 def run_cypher(cypher_query: str, log=False):
@@ -24,15 +35,15 @@ def run_cypher(cypher_query: str, log=False):
     '''
     # initialize
     list_result = []
-    message = "all good"
+    message = "Health check passed"
     query = cypher_query.strip()
 
     # log
     if log:
-        print("running query: \n{}".format(cypher_query))
+        logger.info("running query: \n{}".format(cypher_query))
 
     # make sure have neo4j parameters
-    if NEO4J_IP_PORT and NEO4J_USER and NEO4J_PASSWORD:
+    if driver:
         # execute the query    
         try:
             # read only for driver < 5
@@ -48,7 +59,7 @@ def run_cypher(cypher_query: str, log=False):
             # raise HTTPException(status_code=500, detail=str(e))
 
     else:
-        message = 'no connected'
+        message = 'Driver not initialized'
 
     # build the json
     result = {'data': list_result, 'message': message}
