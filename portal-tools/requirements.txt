@@ -148,7 +148,7 @@ tqdm==4.67.1
     #   huggingface-hub
     #   sentence-transformers
     #   transformers
-transformers==4.51.3
+transformers==4.53.0
     # via sentence-transformers
 typer==0.15.2
     # via mcp
