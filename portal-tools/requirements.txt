@@ -84,7 +84,7 @@ packaging==25.0
     # via
     #   huggingface-hub
     #   transformers
-pillow==11.2.1
+pillow==11.3.0
     # via sentence-transformers
 pydantic==2.11.3
     # via
