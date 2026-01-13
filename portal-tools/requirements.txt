@@ -67,7 +67,7 @@ markupsafe==3.0.2
     # via
     #   jinja2
     #   werkzeug
-mcp==1.6.0
+mcp==1.23.0
     # via portal-tools (pyproject.toml)
 mdurl==0.1.2
     # via markdown-it-py
